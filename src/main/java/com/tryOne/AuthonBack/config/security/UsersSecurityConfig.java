@@ -23,6 +23,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 //security 5 oct 2023
@@ -66,6 +68,35 @@ public class UsersSecurityConfig {
                 //any request should be authenticated
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/auth/**").permitAll();
+                    auth.requestMatchers("/admin/**").hasRole("ADMIN");
+                    auth.requestMatchers("/user/**").hasAnyRole("ADMIN","USER");
+                    auth.anyRequest().authenticated();
+                })
+//                .httpBasic(Customizer.withDefaults())
+                // key 3.4
+                //video 1:44:00
+                .oauth2ResourceServer((oauth2) ->
+                        oauth2.jwt(jwtConfigurer ->{
+                                System.out.println("reached the auth converter here");
+                                jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter());}
+                        ))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .build();
+    }
+
+
+/*
+    //auth 2.1
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+        return http.
+                csrf(csrf -> csrf.disable())
+                //permints all
+//                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                //pass it through an http authentication form and authenticate it
+                //any request should be authenticated
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/auth/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
 //                .httpBasic(Customizer.withDefaults())
@@ -75,6 +106,7 @@ public class UsersSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
     }
+*/
 
 
 
@@ -131,6 +163,17 @@ public class UsersSecurityConfig {
         JWK jwk = new RSAKey.Builder(keys.getPublicKey()).privateKey(keys.getPrivateKey()).build();
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwks);
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter(){
+        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+        System.out.println("Roles reached");
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
+        JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+        jwtConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        return jwtConverter;
     }
 
 }

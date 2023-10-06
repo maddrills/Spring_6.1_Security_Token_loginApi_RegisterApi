@@ -45,7 +45,6 @@ public class TokenService {
                 .subject(auth.getName())
                 .claim("roles",scope)
                 .build();
-
         // 1:44:00 check main class for video
         //using the JwtEncoder to encode a new jwt token we are getting the encoding info from the jwt parameters witch has self now auth.getName roles build
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
