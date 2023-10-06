@@ -37,6 +37,7 @@ public class TokenService {
 
         System.out.println(scope);
 
+        //the signature
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 //this specific service is issuing the service
                 .issuer("self")

@@ -70,6 +70,7 @@ public class UsersSecurityConfig {
                 })
 //                .httpBasic(Customizer.withDefaults())
                 // key 3.4
+                //video 1:44:00
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
